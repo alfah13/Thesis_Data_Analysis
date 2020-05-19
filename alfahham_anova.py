@@ -69,81 +69,82 @@ def one_way_anova_results(response_var, treatment, data):
     anova_output = sm.stats.anova_lm(anova_model_fit, typ=2)
     return anova_output
 
-df010 = df_raw[df_raw.Depth == '0 - 10']
-df010.name = "0-10 cm data"
-df1020 = df_raw[df_raw.Depth == '10 - 20']
-df1020.name = "10-20 cm data"
-df2030 = df_raw[df_raw.Depth == '20 - 30']
-df2030.name = "20-30 cm data"
+if __name__ == '__main__':
+    df010 = df_raw[df_raw.Depth == '0 - 10']
+    df010.name = "0-10 cm data"
+    df1020 = df_raw[df_raw.Depth == '10 - 20']
+    df1020.name = "10-20 cm data"
+    df2030 = df_raw[df_raw.Depth == '20 - 30']
+    df2030.name = "20-30 cm data"
 
-## RUNNING IT TO GET OUTPUT 3 WAY ANOVA ###
-final_assumptions_df_3_way_anova = pd.DataFrame(index= ['jb', 'jbpv', 'skew', 'kurtosis', 'omni', 'omnipv', 'condno',
-       'mineigval'])
-for response_var in response_vars:
-    assumptions_df = three_way_anova_assumptions(response_var, data=df_raw)
-    final_assumptions_df_3_way_anova = final_assumptions_df_3_way_anova.join(assumptions_df)
-
-final_three_way_anova_df_3_way = pd.DataFrame([])
-for response_var in response_vars:
-    three_way_output = three_way_anova_results(response_var, data=df_raw)
-    three_way_output["response_var"] = response_var
-    final_three_way_anova_df_3_way = final_three_way_anova_df_3_way.append(three_way_output)
-    final_three_way_anova_df_3_way.loc[
-        final_three_way_anova_df_3_way['PR(>F)'] < 0.05, 'sig flag'] = ' * * sig * * '
-    final_three_way_anova_df_3_way.loc[(final_three_way_anova_df_3_way['PR(>F)'] <= 0.1)
-                               & (final_three_way_anova_df_3_way['PR(>F)'] >= 0.05),
-                               'sig flag'] = ' * * near sig * * '
-
-# final_three_way_anova_df_3_way.to_csv("three_way_anova.csv")
-##### MAIN PART FOR 2 WAY ANOVA ####
-final_assumptions_df_2_way_anova = pd.DataFrame(index= ['jb', 'jbpv', 'skew', 'kurtosis', 'omni', 'omnipv', 'condno',
-       'mineigval'])
-for dataframes in [df010, df1020, df2030]:
+    ## RUNNING IT TO GET OUTPUT 3 WAY ANOVA ###
+    final_assumptions_df_3_way_anova = pd.DataFrame(index= ['jb', 'jbpv', 'skew', 'kurtosis', 'omni', 'omnipv', 'condno',
+           'mineigval'])
     for response_var in response_vars:
-        assumptions_df_2_way_anova = two_way_anova_assumptions(response_var=response_var, data=dataframes)
-        final_assumptions_df_2_way_anova = final_assumptions_df_2_way_anova.join(assumptions_df_2_way_anova)
+        assumptions_df = three_way_anova_assumptions(response_var, data=df_raw)
+        final_assumptions_df_3_way_anova = final_assumptions_df_3_way_anova.join(assumptions_df)
 
-final_two_way_anova_df = pd.DataFrame([])
-for dataframes in [df010, df1020, df2030]:
+    final_three_way_anova_df_3_way = pd.DataFrame([])
     for response_var in response_vars:
-        two_way_output = two_way_anova_results(response_var=response_var, data=dataframes)
-        two_way_output["response_var"] = response_var
-        two_way_output["depth"] = dataframes.Depth[0]
-        final_two_way_anova_df = final_two_way_anova_df.append(two_way_output)
-        final_two_way_anova_df.loc[
-            final_two_way_anova_df['PR(>F)'] < 0.05, 'sig flag'] = ' * * sig * * '
-        final_two_way_anova_df.loc[(final_two_way_anova_df['PR(>F)'] <= 0.1)
-                                   & (final_two_way_anova_df['PR(>F)'] >= 0.05),
+        three_way_output = three_way_anova_results(response_var, data=df_raw)
+        three_way_output["response_var"] = response_var
+        final_three_way_anova_df_3_way = final_three_way_anova_df_3_way.append(three_way_output)
+        final_three_way_anova_df_3_way.loc[
+            final_three_way_anova_df_3_way['PR(>F)'] < 0.05, 'sig flag'] = ' * * sig * * '
+        final_three_way_anova_df_3_way.loc[(final_three_way_anova_df_3_way['PR(>F)'] <= 0.1)
+                                   & (final_three_way_anova_df_3_way['PR(>F)'] >= 0.05),
                                    'sig flag'] = ' * * near sig * * '
 
-# final_two_way_anova_df.to_csv("two_way_anova.csv")
+    # final_three_way_anova_df_3_way.to_csv("three_way_anova.csv")
+    ##### MAIN PART FOR 2 WAY ANOVA ####
+    final_assumptions_df_2_way_anova = pd.DataFrame(index= ['jb', 'jbpv', 'skew', 'kurtosis', 'omni', 'omnipv', 'condno',
+           'mineigval'])
+    for dataframes in [df010, df1020, df2030]:
+        for response_var in response_vars:
+            assumptions_df_2_way_anova = two_way_anova_assumptions(response_var=response_var, data=dataframes)
+            final_assumptions_df_2_way_anova = final_assumptions_df_2_way_anova.join(assumptions_df_2_way_anova)
 
-final_one_way_anova_treatment_df = pd.DataFrame([])
-for dataframes in [df010, df1020, df2030]:
-    for response_var in response_vars:
-        output = one_way_anova_results(response_var=response_var, treatment="Treatment" ,data=dataframes)
-        output["response_var"] = response_var
-        output["depth"] = dataframes.Depth[0]
-        final_one_way_anova_treatment_df = final_one_way_anova_treatment_df.append(output)
-        final_one_way_anova_treatment_df.loc[
-            final_one_way_anova_treatment_df['PR(>F)'] < 0.05, 'sig flag'] = ' * * sig * * '
-        final_one_way_anova_treatment_df.loc[(final_one_way_anova_treatment_df['PR(>F)'] <= 0.1)
-                                   & (final_one_way_anova_treatment_df['PR(>F)'] >= 0.05),
-                                   'sig flag'] = ' * * near sig * * '
-final_one_way_anova_treatment_df.to_csv("one_way_anova_treatment.csv")
+    final_two_way_anova_df = pd.DataFrame([])
+    for dataframes in [df010, df1020, df2030]:
+        for response_var in response_vars:
+            two_way_output = two_way_anova_results(response_var=response_var, data=dataframes)
+            two_way_output["response_var"] = response_var
+            two_way_output["depth"] = dataframes.Depth[0]
+            final_two_way_anova_df = final_two_way_anova_df.append(two_way_output)
+            final_two_way_anova_df.loc[
+                final_two_way_anova_df['PR(>F)'] < 0.05, 'sig flag'] = ' * * sig * * '
+            final_two_way_anova_df.loc[(final_two_way_anova_df['PR(>F)'] <= 0.1)
+                                       & (final_two_way_anova_df['PR(>F)'] >= 0.05),
+                                       'sig flag'] = ' * * near sig * * '
 
-final_one_way_anova_tillage_df = pd.DataFrame([])
-for dataframes in [df010, df1020, df2030]:
-    for response_var in response_vars:
-        output = one_way_anova_results(response_var=response_var, treatment="Tillage" ,data=dataframes)
-        output["response_var"] = response_var
-        output["depth"] = dataframes.Depth[0]
-        final_one_way_anova_tillage_df = final_one_way_anova_tillage_df.append(output)
-        final_one_way_anova_tillage_df.loc[
-            final_one_way_anova_tillage_df['PR(>F)'] < 0.05, 'sig flag'] = ' * * sig * * '
-        final_one_way_anova_tillage_df.loc[(final_one_way_anova_tillage_df['PR(>F)'] <= 0.1)
-                                   & (final_one_way_anova_tillage_df['PR(>F)'] >= 0.05),
-                                   'sig flag'] = ' * * near sig * * '
-final_one_way_anova_tillage_df.to_csv("one_way_anova_tillage.csv")
+    # final_two_way_anova_df.to_csv("two_way_anova.csv")
+
+    final_one_way_anova_treatment_df = pd.DataFrame([])
+    for dataframes in [df010, df1020, df2030]:
+        for response_var in response_vars:
+            output = one_way_anova_results(response_var=response_var, treatment="Treatment" ,data=dataframes)
+            output["response_var"] = response_var
+            output["depth"] = dataframes.Depth[0]
+            final_one_way_anova_treatment_df = final_one_way_anova_treatment_df.append(output)
+            final_one_way_anova_treatment_df.loc[
+                final_one_way_anova_treatment_df['PR(>F)'] < 0.05, 'sig flag'] = ' * * sig * * '
+            final_one_way_anova_treatment_df.loc[(final_one_way_anova_treatment_df['PR(>F)'] <= 0.1)
+                                       & (final_one_way_anova_treatment_df['PR(>F)'] >= 0.05),
+                                       'sig flag'] = ' * * near sig * * '
+    final_one_way_anova_treatment_df.to_csv("one_way_anova_treatment.csv")
+
+    final_one_way_anova_tillage_df = pd.DataFrame([])
+    for dataframes in [df010, df1020, df2030]:
+        for response_var in response_vars:
+            output = one_way_anova_results(response_var=response_var, treatment="Tillage" ,data=dataframes)
+            output["response_var"] = response_var
+            output["depth"] = dataframes.Depth[0]
+            final_one_way_anova_tillage_df = final_one_way_anova_tillage_df.append(output)
+            final_one_way_anova_tillage_df.loc[
+                final_one_way_anova_tillage_df['PR(>F)'] < 0.05, 'sig flag'] = ' * * sig * * '
+            final_one_way_anova_tillage_df.loc[(final_one_way_anova_tillage_df['PR(>F)'] <= 0.1)
+                                       & (final_one_way_anova_tillage_df['PR(>F)'] >= 0.05),
+                                       'sig flag'] = ' * * near sig * * '
+    final_one_way_anova_tillage_df.to_csv("one_way_anova_tillage.csv")
 
 #########################################################################
